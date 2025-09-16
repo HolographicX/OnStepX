@@ -57,6 +57,7 @@
 extern Telescope telescope;
 
 #include "src/plugins/Plugins.config.h"
+#include <WiFi.h>  
 
 #if DEBUG == PROFILER
   extern void profiler();

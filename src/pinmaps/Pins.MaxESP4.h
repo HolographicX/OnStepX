@@ -12,7 +12,9 @@
   #define SERIAL_A              Serial
 #endif
 #if SERIAL_B_BAUD_DEFAULT != OFF
-  #define SERIAL_B              Serial2
+  #define SERIAL_B              Serial1
+  #define SERIAL_B_RX           20
+  #define SERIAL_B_TX           21
 #endif
 
 // Use the following settings for any TMC UART driver (TMC2209) that may be present
@@ -20,19 +22,19 @@
   #define SERIAL_TMC_HARDWARE_UART
   #define SERIAL_TMC            Serial1          // Use a single hardware serial port to up to four drivers
   #define SERIAL_TMC_BAUD       460800           // Baud rate
-  #define SERIAL_TMC_RX         39               // Recieving data
-  #define SERIAL_TMC_TX         4                // Transmit data
+  #define SERIAL_TMC_RX         10               // Recieving data
+  #define SERIAL_TMC_TX         9                // Transmit data
   #define SERIAL_TMC_ADDRESS_MAP(x) ((x==4)?2 : x) // Axis1(0) is 0, Axis2(1) is 1, Axis3(2) is 2, Axis4(3) is 3, Axis5(4) is 2
 #endif
 
 // Uses default ESP32 I2C GPIO21 (SDA) and GPIO22 (SCL)
 
 // The multi-purpose pins (Aux3..Aux8 can be analog pwm/dac if supported)
-#define AUX2_PIN                39               // M3 pin TMC UART RX
-#define AUX3_PIN                14               // Home SW for Axis1
-#define AUX4_PIN                13               // Home SW for Axis2
-#define AUX5_PIN                1                // TX0 main USB, etc.
-#define AUX6_PIN                3                // RX0 main USB, etc.
+#define AUX2_PIN                10               // M3 pin TMC UART RX
+#define AUX3_PIN                23               // Home SW for Axis1
+#define AUX4_PIN                24               // Home SW for Axis2
+#define AUX5_PIN                21                // TX0 main USB, etc.
+#define AUX6_PIN                20                // RX0 main USB, etc.
 #define AUX7_PIN                23               // Limit SW, PPS, etc.
 #define AUX8_PIN                25               // 1-Wire, Status LED, Reticle LED, Tone, etc.
 
@@ -52,7 +54,7 @@
 #endif
 #define STATUS_LED_ON_STATE HIGH
 #ifndef STATUS_LED_PIN
-  #define STATUS_LED_PIN        12               // Default LED Anode (+)
+  #define STATUS_LED_PIN        8               // Default LED Anode (+)
 #endif
 #ifdef MOUNT_LED_ON_STATE
   #undef MOUNT_LED_ON_STATE
@@ -78,29 +80,29 @@
   #define LIMIT_SENSE_PIN       AUX7_PIN
 #endif
 
-#define SHARED_DIRECTION_PINS                    // Hint that the direction pins are shared
-#define SHARED_ENABLE_PIN       5                // Hint that the enable pins are shared
+// #define SHARED_DIRECTION_PINS                    // Hint that the direction pins are shared
+// #define SHARED_ENABLE_PIN       5                // Hint that the enable pins are shared
 
 // Axis1 RA/Azm step/dir driver
-#define AXIS1_ENABLE_PIN        SHARED           // Enable pin control
+#define AXIS1_ENABLE_PIN        20           // Enable pin control
 #define AXIS1_M0_PIN            OFF              // hardwired for TMC UART address 0
 #define AXIS1_M1_PIN            OFF              // hardwired for TMC UART address 0
 #define AXIS1_M2_PIN            OFF              // UART TX
 #define AXIS1_M3_PIN            OFF              // UART RX
-#define AXIS1_STEP_PIN          18
-#define AXIS1_DIR_PIN           0                // [must be high at boot 0]
+#define AXIS1_STEP_PIN          4
+#define AXIS1_DIR_PIN           5                // [must be high at boot 0]
 #ifndef AXIS1_SENSE_HOME_PIN
   #define AXIS1_SENSE_HOME_PIN  AUX3_PIN
 #endif
 
 // Axis2 Dec/Alt step/dir driver
-#define AXIS2_ENABLE_PIN        SHARED
+#define AXIS2_ENABLE_PIN        21
 #define AXIS2_M0_PIN            OFF              // hardwired for TMC UART address 1
 #define AXIS2_M1_PIN            OFF              // hardwired for TMC UART address 1
 #define AXIS2_M2_PIN            OFF              // N/C
 #define AXIS2_M3_PIN            OFF              // UART RX
-#define AXIS2_STEP_PIN          27
-#define AXIS2_DIR_PIN           26
+#define AXIS2_STEP_PIN          3
+#define AXIS2_DIR_PIN           6
 #ifndef AXIS2_SENSE_HOME_PIN
   #define AXIS2_SENSE_HOME_PIN  AUX4_PIN
 #endif
@@ -109,7 +111,7 @@
 #endif
 
 // For rotator stepper driver
-#define AXIS3_ENABLE_PIN        SHARED
+#define AXIS3_ENABLE_PIN        OFF
 #define AXIS3_M0_PIN            OFF              // hardwired for TMC UART address 2
 #define AXIS3_M1_PIN            OFF              // hardwired for TMC UART address 2
 #define AXIS3_M2_PIN            OFF              // N/C
@@ -118,22 +120,22 @@
 #define AXIS3_DIR_PIN           15
 
 // For focuser1 stepper driver
-#define AXIS4_ENABLE_PIN        SHARED
+#define AXIS4_ENABLE_PIN        OFF
 #define AXIS4_M0_PIN            OFF              // hardwired for TMC UART address 3
 #define AXIS4_M1_PIN            OFF              // hardwired for TMC UART address 3
 #define AXIS4_M2_PIN            OFF              // N/C
 #define AXIS4_M3_PIN            OFF              // UART RX
-#define AXIS4_STEP_PIN          19
-#define AXIS4_DIR_PIN           15
+#define AXIS4_STEP_PIN          2
+#define AXIS4_DIR_PIN           7
 
 // For focuser2 stepper driver
-#define AXIS5_ENABLE_PIN        SHARED
+#define AXIS5_ENABLE_PIN        OFF
 #define AXIS5_M0_PIN            OFF              // hardwired for TMC UART address 2
 #define AXIS5_M1_PIN            OFF              // hardwired for TMC UART address 2
 #define AXIS5_M2_PIN            OFF              // N/C
 #define AXIS5_M3_PIN            OFF              // UART RX
-#define AXIS5_STEP_PIN          2
-#define AXIS5_DIR_PIN           15
+#define AXIS5_STEP_PIN          1
+#define AXIS5_DIR_PIN           8
 
 // ST4 interface
 #define ST4_RA_W_PIN            34               // [input only 34] ST4 RA- West

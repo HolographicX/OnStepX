@@ -7,21 +7,25 @@
 // Serial0: RX Pin GPIO3, TX Pin GPIO1 (to USB serial adapter)
 // Serial1: RX1 Pin GPIO10, TX1 Pin GPIO9 (on SPI Flash pins, must be moved to be used)
 // Serial2: RX2 Pin GPIO16, TX2 Pin GPIO17
-
+#define SERIAL_B_BAUD_DEFAULT   OFF
 #if SERIAL_A_BAUD_DEFAULT != OFF
   #define SERIAL_A              Serial
-#endif
-#if SERIAL_B_BAUD_DEFAULT != OFF
-  #define SERIAL_B              Serial2
-#endif
+  // #define SERIAL_A_RX           20
+  // #define SERIAL_A_TX           21
+  #endif
+// #if SERIAL_B_BAUD_DEFAULT != OFF
+//   #define SERIAL_B              Serial1
+//   #define SERIAL_B_RX           20
+//   #define SERIAL_B_TX           21
+// #endif
 
 // Use the following settings for any TMC UART driver (TMC2209) that may be present
 #if defined(STEP_DIR_TMC_UART_PRESENT) || defined(SERVO_TMC2209_PRESENT)
   #if defined(SERIAL_TMC_HARDWARE_UART)
     #define SERIAL_TMC          Serial1          // Use a single hardware serial port to up to four drivers
     #define SERIAL_TMC_BAUD     460800           // Baud rate
-    #define SERIAL_TMC_RX       39               // Recieving data
-    #define SERIAL_TMC_TX       23               // Transmit data
+    #define SERIAL_TMC_RX       10               // Recieving data
+    #define SERIAL_TMC_TX       9               // Transmit data
     #define SERIAL_TMC_ADDRESS_MAP(x) ((x==4)?2 : x) // Axis1(0) is 0, Axis2(1) is 1, Axis3(2) is 2, Axis4(3) is 3, Axis5(4) is 2
   #endif
 #endif
@@ -30,7 +34,7 @@
 
 // The multi-purpose pins (Aux3..Aux8 can be analog pwm/dac if supported)
 #define AUX2_PIN                4                // ESP8266 RST control, or MISO for Axis1&2, or Axis4 EN support
-#define AUX3_PIN                21               // Home SW for Axis1, or I2C SDA
+#define AUX3_PIN                23               // Home SW for Axis1, or I2C SDA
 #define AUX4_PIN                22               // Home SW for Axis2, or I2C SCL
 #define AUX7_PIN                39               // Limit SW, PPS, etc.
 #define AUX8_PIN                25               // 1-Wire, Status LED, Reticle LED, Tone, etc.
@@ -73,28 +77,28 @@
   #define LIMIT_SENSE_PIN       AUX7_PIN
 #endif
 
-#define SHARED_DIRECTION_PINS                    // Hint that the direction pins are shared
-#define SHARED_ENABLE_PIN       12               // Hint that the enable pins are shared
+// #define SHARED_DIRECTION_PINS                    // Hint that the direction pins are shared
+// #define SHARED_ENABLE_PIN       12               // Hint that the enable pins are shared
 
 // Axis1 RA/Azm step/dir driver
-#define AXIS1_ENABLE_PIN        SHARED           // [must be low at boot 12]
-#define AXIS1_M0_PIN            13               // SPI MOSI
-#define AXIS1_M1_PIN            14               // SPI SCK
-#define AXIS1_M2_PIN            23               // SPI CS (UART TX)
+#define AXIS1_ENABLE_PIN        20           // [must be low at boot 12]
+#define AXIS1_M0_PIN            103               // SPI MOSI
+#define AXIS1_M1_PIN            104               // SPI SCK
+#define AXIS1_M2_PIN            105               // SPI CS (UART TX)
 #if AXIS4_POWER_DOWN != ON
   #define AXIS1_M3_PIN          AUX2_PIN         // SPI MISO (UART RX)
 #endif
-#define AXIS1_STEP_PIN          18
-#define AXIS1_DIR_PIN           0                // [must be high at boot 0]
+#define AXIS1_STEP_PIN          4
+#define AXIS1_DIR_PIN           5                // [must be high at boot 0]
 #ifndef AXIS1_SENSE_HOME_PIN
   #define AXIS1_SENSE_HOME_PIN  AUX3_PIN
 #endif
 
 // Axis2 Dec/Alt step/dir driver
-#define AXIS2_ENABLE_PIN        SHARED
-#define AXIS2_M0_PIN            13               // SPI MOSI
-#define AXIS2_M1_PIN            14               // SPI SCK
-#define AXIS2_M2_PIN            5                // SPI CS (UART TX)
+#define AXIS2_ENABLE_PIN        21
+#define AXIS2_M0_PIN            102               // SPI MOSI
+#define AXIS2_M1_PIN            101              // SPI SCK
+#define AXIS2_M2_PIN            100                // SPI CS (UART TX)
 #if AXIS4_POWER_DOWN != ON
   #define AXIS2_M3_PIN          AUX2_PIN         // SPI MISO (UART RX)
 #endif
