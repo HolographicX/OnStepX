@@ -11,11 +11,11 @@
 #if SERIAL_A_BAUD_DEFAULT != OFF
   #define SERIAL_A              Serial
 #endif
-#if SERIAL_B_BAUD_DEFAULT != OFF
-  #define SERIAL_B              Serial1
-  #define SERIAL_B_RX           20
-  #define SERIAL_B_TX           21
-#endif
+// #if SERIAL_B_BAUD_DEFAULT != OFF
+//   #define SERIAL_B              Serial1
+//   #define SERIAL_B_RX           20
+//   #define SERIAL_B_TX           21
+// #endif
 
 // Use the following settings for any TMC UART driver (TMC2209) that may be present
 #if defined(STEP_DIR_TMC_UART_PRESENT) || defined(SERVO_TMC2209_PRESENT)
