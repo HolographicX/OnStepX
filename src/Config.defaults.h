@@ -132,6 +132,12 @@
 #define STA_ENABLED true
 #endif
 
+#if OPERATIONAL_MODE == WIFI
+#ifndef NV_WIFI_SETTINGS
+#define NV_WIFI_SETTINGS                                          // allow NV storage of WiFi settings
+#endif
+#endif
+
 #ifndef STA_AP_FALLBACK
 #define STA_AP_FALLBACK               true                        // activate SoftAP if station fails to connect
 #endif
@@ -149,13 +155,13 @@
 #define CAN_PLUS                      OFF                         // Select from CAN_SAN, CAN_ESP32, CAN_MCP2515, CANn_TEENSY4
 #endif
 #ifndef CAN_BAUD
-#define CAN_BAUD                      500000                      // 500000 baud default
+#define CAN_BAUD                      1000000                     // 1000000 baud default
 #endif
 #ifndef CAN_SEND_RATE_MS
-#define CAN_SEND_RATE_MS              25                          // 40 Hz CAN controller send message processing rate
+#define CAN_SEND_RATE_MS              10                          // 100 Hz CAN controller send message processing rate
 #endif
 #ifndef CAN_RECV_RATE_MS
-#define CAN_RECV_RATE_MS              5                           // 200 Hz CAN controller recv. message processing rate
+#define CAN_RECV_RATE_MS              10                          // 100 Hz CAN controller recv message processing rate
 #endif
 #ifndef CAN_RX_PIN
 #define CAN_RX_PIN                    OFF                         // for ESP32 CAN interface
@@ -223,6 +229,9 @@
 #ifndef AXIS1_STEPS_PER_DEGREE
 #define AXIS1_STEPS_PER_DEGREE        12800.0                     // (micro)steps per degree
 #endif
+#ifndef AXIS1_COUNTS_PER_DEGREE
+#define AXIS1_COUNTS_PER_DEGREE       AXIS1_STEPS_PER_DEGREE      // counts per degree
+#endif
 #ifndef AXIS1_REVERSE
 #define AXIS1_REVERSE                 OFF                         // reverse rotation direction
 #endif
@@ -241,11 +250,8 @@
 #ifndef AXIS1_LIMIT_MAX
 #define AXIS1_LIMIT_MAX               180                         // in degrees
 #endif
-#ifdef AXIS1_SYNC_THRESHOLD_DEGREES                               // maximum distance from absolute encoder pos in degrees for syncs
-#define AXIS1_SYNC_THRESHOLD lround(AXIS1_SYNC_THRESHOLD_DEGREES*AXIS1_STEPS_PER_DEGREE)
-#endif
-#ifndef AXIS1_SYNC_THRESHOLD
-#define AXIS1_SYNC_THRESHOLD          OFF                         // sync threshold in counts (required for absolute encoders) or OFF
+#ifndef AXIS1_LIMIT_SYNC
+#define AXIS1_LIMIT_SYNC              OFF                         // Default sync limit in degrees (0 to 30), or OFF (NV saved)
 #endif
 #ifndef AXIS1_SENSE_HOME
 #define AXIS1_SENSE_HOME              OFF                         // HIGH or LOW state when clockwise of home position, seen from front
@@ -323,9 +329,6 @@
   #ifndef AXIS1_SERVO_VELOCITY_PWMTHRS
   #define AXIS1_SERVO_VELOCITY_PWMTHRS  OFF                       // velocity (in steps/s) to switch from stealthChop to spreadCycle
   #endif                                                          // should happen at the 2x sidereal rate, for TMC2209/TMC5160 only
-  #ifndef AXIS1_MOTOR_STEPS_PER_DEGREE
-  #define AXIS1_MOTOR_STEPS_PER_DEGREE  AXIS1_STEPS_PER_DEGREE    // for calculating ratio of encoder counts/deg to motor steps/deg
-  #endif                                                          // for TMC stepper motors only
   #ifndef AXIS1_SERVO_DC_PWR_MIN                          
   #define AXIS1_SERVO_DC_PWR_MIN        0.0F                      // minimum power just below where axis motion starts, in %
   #endif                                                          // approximate, for DC motors only
@@ -340,13 +343,13 @@
   #define AXIS1_PID_SENSITIVITY         0                         // 0 to use slewing state, or % power for 100% pid set two (_GOTO)
   #endif
   #ifndef AXIS1_PID_P
-  #define AXIS1_PID_P                   2.0                       // P = proportional
+  #define AXIS1_PID_P                   0.0                       // P = proportional
   #endif
   #ifndef AXIS1_PID_I
-  #define AXIS1_PID_I                   5.0                       // I = integral
+  #define AXIS1_PID_I                   0.0                       // I = integral
   #endif
   #ifndef AXIS1_PID_D
-  #define AXIS1_PID_D                   1.0                       // D = derivative
+  #define AXIS1_PID_D                   0.0                       // D = derivative
   #endif
   #ifndef AXIS1_PID_P_GOTO
   #define AXIS1_PID_P_GOTO              AXIS1_PID_P               // P = proportional
@@ -389,11 +392,18 @@
   #define AXIS1_KTECH_PRESENT
 #endif
 
+#if AXIS1_DRIVER_MODEL == MKS42D
+  #define AXIS1_MKS42D_PRESENT
+#endif
+
 #ifndef AXIS2_DRIVER_MODEL
 #define AXIS2_DRIVER_MODEL            OFF                         // specify a driver to enable
 #endif
 #ifndef AXIS2_STEPS_PER_DEGREE
 #define AXIS2_STEPS_PER_DEGREE        12800.0                     // (micro)steps per degree of movement
+#endif
+#ifndef AXIS2_COUNTS_PER_DEGREE
+#define AXIS2_COUNTS_PER_DEGREE       AXIS2_STEPS_PER_DEGREE      // counts per degree
 #endif
 #ifndef AXIS2_REVERSE
 #define AXIS2_REVERSE                 OFF                         // reverse movement
@@ -413,11 +423,8 @@
 #ifndef AXIS2_LIMIT_MAX
 #define AXIS2_LIMIT_MAX               90                          // in degrees
 #endif
-#ifdef AXIS2_SYNC_THRESHOLD_DEGREES
-#define AXIS2_SYNC_THRESHOLD lround(AXIS2_SYNC_THRESHOLD_DEGREES*AXIS2_STEPS_PER_DEGREE)
-#endif
-#ifndef AXIS2_SYNC_THRESHOLD
-#define AXIS2_SYNC_THRESHOLD          OFF
+#ifndef AXIS2_LIMIT_SYNC
+#define AXIS2_LIMIT_SYNC              OFF                         // Default sync limit in degrees (0 to 30), or OFF (NV saved)
 #endif
 #ifndef AXIS2_SENSE_HOME
 #define AXIS2_SENSE_HOME              OFF                         // HIGH or LOW state when clockwise of home position, seen from above
@@ -495,9 +502,6 @@
   #ifndef AXIS2_SERVO_VELOCITY_PWMTHRS
   #define AXIS2_SERVO_VELOCITY_PWMTHRS  OFF
   #endif
-  #ifndef AXIS2_MOTOR_STEPS_PER_DEGREE
-  #define AXIS2_MOTOR_STEPS_PER_DEGREE  AXIS2_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS2_SERVO_DC_PWR_MIN
   #define AXIS2_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -512,13 +516,13 @@
   #define AXIS2_PID_SENSITIVITY         0
   #endif
   #ifndef AXIS2_PID_P
-  #define AXIS2_PID_P                   2.0
+  #define AXIS2_PID_P                   0.0
   #endif
   #ifndef AXIS2_PID_I
-  #define AXIS2_PID_I                   5.0
+  #define AXIS2_PID_I                   0.0
   #endif
   #ifndef AXIS2_PID_D
-  #define AXIS2_PID_D                   1.0
+  #define AXIS2_PID_D                   0.0
   #endif
   #ifndef AXIS2_PID_P_GOTO
   #define AXIS2_PID_P_GOTO              AXIS2_PID_P
@@ -559,6 +563,26 @@
 
 #if AXIS2_DRIVER_MODEL == KTECH
   #define AXIS2_KTECH_PRESENT
+#endif
+
+#if AXIS2_DRIVER_MODEL == MKS42D
+  #define AXIS2_MKS42D_PRESENT
+#endif
+
+#if defined(AXIS1_SERVO_PRESENT) && \
+    (AXIS1_ENCODER == AS37_H39B_B || AXIS1_ENCODER == JTW_24BIT || AXIS1_ENCODER == JTW_26BIT || AXIS1_ENCODER == LIKA_ASC85 || \
+     (AXIS1_ENCODER == SERIAL_BRIDGE && SERIAL_ENCODER_ABSOLUTE == ON))
+  #define HAS_ABSOLUTE_ENCODER_SERVO_AXIS1
+#endif
+
+#if defined(AXIS2_SERVO_PRESENT) && \
+    (AXIS2_ENCODER == AS37_H39B_B || AXIS2_ENCODER == JTW_24BIT || AXIS2_ENCODER == JTW_26BIT || AXIS2_ENCODER == LIKA_ASC85 || \
+     (AXIS2_ENCODER == SERIAL_BRIDGE && SERIAL_ENCODER_ABSOLUTE == ON))
+  #define HAS_ABSOLUTE_ENCODER_SERVO_AXIS2
+#endif
+
+#if defined(HAS_ABSOLUTE_ENCODER_SERVO_AXIS1) && defined(HAS_ABSOLUTE_ENCODER_SERVO_AXIS2)
+  #define HAS_ABSOLUTE_ENCODER_SERVO
 #endif
 
 // decode internal mount type, tangent arm, azm wrap
@@ -612,6 +636,15 @@
 #ifndef MOUNT_COORDS_MEMORY
 #define MOUNT_COORDS_MEMORY           OFF                         // ON Enables mount position memory
 #endif
+// SA_STRICT requires an authority source
+// SA_AUTO grants legacy session trust only when neither paired absolute authority nor coordinate memory are configured
+// SA_PERMISSIVE always grants boot trust
+#ifndef MOUNT_STARTUP_MODE
+#define MOUNT_STARTUP_MODE            SA_AUTO
+#endif
+#ifndef NV_INIT_ERROR_REVOKES_AUTHORITY
+#define NV_INIT_ERROR_REVOKES_AUTHORITY ON                        // ON revokes startup authority trust if NV reports an init/read fault
+#endif
 #ifndef MOUNT_ENABLE_IN_STANDBY
 #define MOUNT_ENABLE_IN_STANDBY       OFF                         // ON Enables mount motor drivers in standby
 #endif
@@ -629,7 +662,7 @@
 #define AXIS1_TARGET_TOLERANCE        0.0F                        // distance in arc-seconds when goto is at destination
 #endif
 #ifndef AXIS1_HOME_TOLERANCE                                      // distance in arc-seconds when at home
-#define AXIS1_HOME_TOLERANCE          AXIS1_TARGET_TOLERANCE + (1800.0/AXIS1_STEPS_PER_DEGREE)
+#define AXIS1_HOME_TOLERANCE          AXIS1_TARGET_TOLERANCE + (1800.0/AXIS1_COUNTS_PER_DEGREE)
 #endif
 #ifndef AXIS1_SECTOR_GEAR
 #define AXIS1_SECTOR_GEAR             OFF                         // special case of a Sector Gear RA with limited travel
@@ -642,7 +675,7 @@
 #define AXIS2_TARGET_TOLERANCE        0.0F                        // in arc-seconds
 #endif
 #ifndef AXIS2_HOME_TOLERANCE                                      // in arc-seconds
-#define AXIS2_HOME_TOLERANCE          AXIS2_TARGET_TOLERANCE + (1800.0/AXIS2_STEPS_PER_DEGREE)
+#define AXIS2_HOME_TOLERANCE          AXIS2_TARGET_TOLERANCE + (1800.0/AXIS2_COUNTS_PER_DEGREE)
 #endif
 #ifndef AXIS2_TANGENT_ARM
 #define AXIS2_TANGENT_ARM             OFF                         // special case of a Tangent Arm Dec with limited travel
@@ -718,8 +751,11 @@
 #ifndef LIMIT_SENSE_STRICT
 #define LIMIT_SENSE_STRICT            OFF                         // for all axes, ON blocks motion if min/max are on the same pin
 #endif
-#ifndef LIMIT_STRICT
-#define LIMIT_STRICT                  ON                          // ON enables Mount limits at startup if date/time are set
+#ifndef LIMIT_RECOVERY
+#define LIMIT_RECOVERY                OFF                         // ON allows 1s for gotos away from horizon, meridian, and axis1 min/max limits
+#endif
+#ifndef LIMIT_RECOVERY_WITH_TRACKING
+#define LIMIT_RECOVERY_WITH_TRACKING  OFF                         // ON to automatically enable tracking on limit recovery
 #endif
 
 // st4
@@ -755,10 +791,6 @@
 #define PARK_STATUS                   OFF
 #endif
 
-#ifndef PARK_STRICT
-#define PARK_STRICT                   OFF
-#endif
-
 // pec
 #ifndef PEC_STEPS_PER_WORM_ROTATION
 #define PEC_STEPS_PER_WORM_ROTATION   0
@@ -777,6 +809,9 @@
 #ifndef GUIDE_TIME_LIMIT
 #define GUIDE_TIME_LIMIT              0                           // in seconds, 0 to disable
 #endif
+#ifndef GUIDE_TIME_NO_LIMITS
+#define GUIDE_TIME_NO_LIMITS          5                           // max guide time when soft limits are disabled, in seconds, 0 to disable
+#endif
 #ifndef GUIDE_DISABLE_BACKLASH
 #define GUIDE_DISABLE_BACKLASH        OFF                         // disables backlash while pulse-guiding
 #endif
@@ -786,22 +821,22 @@
 
 // tracking
 #ifndef TRACK_AUTOSTART
-#define TRACK_AUTOSTART               OFF                         // begin tracking at startup
+#define TRACK_AUTOSTART               OFF                         // automatically begins tracking at startup
 #endif
 #ifndef TRACK_WITHOUT_LIMITS
-#define TRACK_WITHOUT_LIMITS          OFF                         // allow tracking even if limits are disabled
+#define TRACK_WITHOUT_LIMITS          OFF                         // allows tracking even if limits are disabled
 #endif
 #ifndef TRACK_COMPENSATION_DEFAULT
-#define TRACK_COMPENSATION_DEFAULT    OFF
+#define TRACK_COMPENSATION_DEFAULT    OFF                         // use OFF, REFRACTION, REFRACTION_DUAL, MODEL, MODEL_DUAL
 #endif
 #ifndef TRACK_COMPENSATION_MEMORY
-#define TRACK_COMPENSATION_MEMORY     OFF
+#define TRACK_COMPENSATION_MEMORY     OFF                         // remembers the last runtime tracking compensation setting
 #endif
 #ifndef TRACK_BACKLASH_RATE
-#define TRACK_BACKLASH_RATE           25
-#endif
+#define TRACK_BACKLASH_RATE           25                          // the backlash takeup rate in x the sidereal rate
+#endif                                                            // this must be within stepper motors torque limits (no acceleration)
 #ifndef TRACKING_RATE_DEFAULT_HZ
-  #define TRACKING_RATE_DEFAULT_HZ    SIDEREAL_RATE_HZ
+  #define TRACKING_RATE_DEFAULT_HZ    SIDEREAL_RATE_HZ            // the normal sidereal tracking rate
 #endif
 
 // slewing
@@ -837,14 +872,33 @@
 #endif
 
 // meridian flip, pier side
-#ifndef MFLIP_SKIP_HOME
-#define MFLIP_SKIP_HOME               OFF
+#ifndef MFLIP_HOME_DEFAULT
+  #if defined(MFLIP_PAUSE_HOME_DEFAULT) && MFLIP_PAUSE_HOME_DEFAULT == ON
+    #define MFLIP_HOME_DEFAULT        PAUSE
+  #elif defined(MFLIP_VISIT_HOME_DEFAULT)
+    #if MFLIP_VISIT_HOME_DEFAULT == ON
+      #define MFLIP_HOME_DEFAULT      VISIT
+    #else
+      #define MFLIP_HOME_DEFAULT      OFF
+    #endif
+  #elif defined(MFLIP_SKIP_HOME)
+    #if MFLIP_SKIP_HOME == ON
+      #define MFLIP_HOME_DEFAULT      OFF
+    #else
+      #define MFLIP_HOME_DEFAULT      VISIT
+    #endif
+  #else
+    #define MFLIP_HOME_DEFAULT        VISIT
+  #endif
 #endif
-#ifndef MFLIP_PAUSE_HOME_DEFAULT
-#define MFLIP_PAUSE_HOME_DEFAULT      OFF
-#endif
-#ifndef MFLIP_PAUSE_HOME_MEMORY
-#define MFLIP_PAUSE_HOME_MEMORY       OFF
+#ifndef MFLIP_HOME_MEMORY
+  #if defined(MFLIP_PAUSE_HOME_MEMORY) && MFLIP_PAUSE_HOME_MEMORY == ON
+    #define MFLIP_HOME_MEMORY         ON
+  #elif defined(MFLIP_VISIT_HOME_MEMORY)
+    #define MFLIP_HOME_MEMORY         MFLIP_VISIT_HOME_MEMORY
+  #else
+    #define MFLIP_HOME_MEMORY         OFF
+  #endif
 #endif
 #ifndef MFLIP_AUTOMATIC_DEFAULT
 #define MFLIP_AUTOMATIC_DEFAULT       OFF
@@ -875,6 +929,10 @@
 #define ALIGN_MODEL_MEMORY            OFF                         // restores any pointing model saved in NV at startup
 #endif
 
+#ifndef SYNC_POLE_LIMIT
+#define SYNC_POLE_LIMIT               85                          // Default Eq sync/align maximum |Dec| (60 to 90 degrees); 90 or OFF is unlimited (NV saved)
+#endif
+
 #define HIGH_SPEED_ALIGN
 
 // -----------------------------------------------------------------------------------
@@ -884,6 +942,9 @@
 #endif
 #ifndef AXIS3_STEPS_PER_DEGREE
 #define AXIS3_STEPS_PER_DEGREE        64.0                        // (micro)steps per degree of movement
+#endif
+#ifndef AXIS3_COUNTS_PER_DEGREE
+#define AXIS3_COUNTS_PER_DEGREE       AXIS3_STEPS_PER_DEGREE      // counts per degree
 #endif
 #ifndef AXIS3_REVERSE
 #define AXIS3_REVERSE                 OFF                         // reverse movement
@@ -914,9 +975,6 @@
 #endif
 #ifndef AXIS3_LIMIT_MAX
 #define AXIS3_LIMIT_MAX               180                         // in degrees
-#endif
-#ifndef AXIS3_SYNC_THRESHOLD
-#define AXIS3_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS3_SENSE_HOME
 #define AXIS3_SENSE_HOME              OFF
@@ -990,9 +1048,6 @@
   #ifndef AXIS3_SERVO_VELOCITY_PWMTHRS
   #define AXIS3_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS3_MOTOR_STEPS_PER_DEGREE
-  #define AXIS3_MOTOR_STEPS_PER_DEGREE  AXIS3_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS3_SERVO_DC_PWR_MIN
   #define AXIS3_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1004,13 +1059,13 @@
   #define AXIS3_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS3_PID_P
-  #define AXIS3_PID_P                   2.0
+  #define AXIS3_PID_P                   0.0
   #endif
   #ifndef AXIS3_PID_I
-  #define AXIS3_PID_I                   5.0
+  #define AXIS3_PID_I                   0.0
   #endif
   #ifndef AXIS3_PID_D
-  #define AXIS3_PID_D                   1.0
+  #define AXIS3_PID_D                   0.0
   #endif
 
   #ifndef AXIS3_SERVO_FLTR
@@ -1029,6 +1084,10 @@
 
 #if AXIS3_DRIVER_MODEL == KTECH
   #define AXIS3_KTECH_PRESENT
+#endif
+
+#if AXIS3_DRIVER_MODEL == MKS42D
+  #define AXIS3_MKS42D_PRESENT
 #endif
 
 // -----------------------------------------------------------------------------------
@@ -1060,6 +1119,9 @@
 #endif
 #ifndef AXIS4_STEPS_PER_MICRON
 #define AXIS4_STEPS_PER_MICRON        0.5                         // (micro)steps per micron of movement
+#endif
+#ifndef AXIS4_COUNTS_PER_MICRON
+#define AXIS4_COUNTS_PER_MICRON       AXIS4_STEPS_PER_MICRON      // counts per micron
 #endif
 #ifndef AXIS4_REVERSE
 #define AXIS4_REVERSE                 OFF                         // reverse movement direction
@@ -1096,9 +1158,6 @@
 #endif
 #ifndef AXIS4_LIMIT_MAX
 #define AXIS4_LIMIT_MAX               50                          // in mm
-#endif
-#ifndef AXIS4_SYNC_THRESHOLD
-#define AXIS4_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS4_HOME_DEFAULT
 #define AXIS4_HOME_DEFAULT            MIDDLE                      // use MINIMUM (zero), MIDDLE (half travel), MAXIMUM (full travel), or a position in microns
@@ -1176,9 +1235,6 @@
   #ifndef AXIS4_SERVO_VELOCITY_PWMTHRS
   #define AXIS4_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS4_MOTOR_STEPS_PER_DEGREE
-  #define AXIS4_MOTOR_STEPS_PER_DEGREE  AXIS4_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS4_SERVO_DC_PWR_MIN
   #define AXIS4_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1190,13 +1246,13 @@
   #define AXIS4_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS4_PID_P
-  #define AXIS4_PID_P                   2.0
+  #define AXIS4_PID_P                   0.0
   #endif
   #ifndef AXIS4_PID_I
-  #define AXIS4_PID_I                   5.0
+  #define AXIS4_PID_I                   0.0
   #endif
   #ifndef AXIS4_PID_D
-  #define AXIS4_PID_D                   1.0
+  #define AXIS4_PID_D                   0.0
   #endif
 
   #ifndef AXIS4_SERVO_FLTR
@@ -1217,12 +1273,19 @@
   #define AXIS4_KTECH_PRESENT
 #endif
 
+#if AXIS4_DRIVER_MODEL == MKS42D
+  #define AXIS4_MKS42D_PRESENT
+#endif
+
 // focuser settings, FOCUSER2
 #ifndef AXIS5_DRIVER_MODEL
 #define AXIS5_DRIVER_MODEL            OFF
 #endif
 #ifndef AXIS5_STEPS_PER_MICRON
 #define AXIS5_STEPS_PER_MICRON        0.5
+#endif
+#ifndef AXIS5_COUNTS_PER_MICRON
+#define AXIS5_COUNTS_PER_MICRON       AXIS5_STEPS_PER_MICRON
 #endif
 #ifndef AXIS5_REVERSE
 #define AXIS5_REVERSE                 OFF
@@ -1259,9 +1322,6 @@
 #endif
 #ifndef AXIS5_LIMIT_MAX
 #define AXIS5_LIMIT_MAX               50
-#endif
-#ifndef AXIS5_SYNC_THRESHOLD
-#define AXIS5_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS5_HOME_DEFAULT
 #define AXIS5_HOME_DEFAULT            MIDDLE
@@ -1339,9 +1399,6 @@
   #ifndef AXIS5_SERVO_VELOCITY_PWMTHRS
   #define AXIS5_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS5_MOTOR_STEPS_PER_DEGREE
-  #define AXIS5_MOTOR_STEPS_PER_DEGREE  AXIS5_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS5_SERVO_DC_PWR_MIN
   #define AXIS5_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1353,13 +1410,13 @@
   #define AXIS5_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS5_PID_P
-  #define AXIS5_PID_P                   2.0
+  #define AXIS5_PID_P                   0.0
   #endif
   #ifndef AXIS5_PID_I
-  #define AXIS5_PID_I                   5.0
+  #define AXIS5_PID_I                   0.0
   #endif
   #ifndef AXIS5_PID_D
-  #define AXIS5_PID_D                   1.0
+  #define AXIS5_PID_D                   0.0
   #endif
   #ifndef AXIS5_PID_P_GOTO
   #define AXIS5_PID_P_GOTO              AXIS5_PID_P
@@ -1389,12 +1446,19 @@
   #define AXIS5_KTECH_PRESENT
 #endif
 
+#if AXIS5_DRIVER_MODEL == MKS42D
+  #define AXIS5_MKS42D_PRESENT
+#endif
+
 // focuser settings, FOCUSER3
 #ifndef AXIS6_DRIVER_MODEL
 #define AXIS6_DRIVER_MODEL            OFF
 #endif
 #ifndef AXIS6_STEPS_PER_MICRON
 #define AXIS6_STEPS_PER_MICRON        0.5
+#endif
+#ifndef AXIS6_COUNTS_PER_MICRON
+#define AXIS6_COUNTS_PER_MICRON       AXIS6_STEPS_PER_MICRON
 #endif
 #ifndef AXIS6_REVERSE
 #define AXIS6_REVERSE                 OFF
@@ -1431,9 +1495,6 @@
 #endif
 #ifndef AXIS6_LIMIT_MAX
 #define AXIS6_LIMIT_MAX               50
-#endif
-#ifndef AXIS6_SYNC_THRESHOLD
-#define AXIS6_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS6_HOME_DEFAULT
 #define AXIS6_HOME_DEFAULT            MIDDLE
@@ -1511,9 +1572,6 @@
   #ifndef AXIS6_SERVO_VELOCITY_PWMTHRS
   #define AXIS6_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS6_MOTOR_STEPS_PER_DEGREE
-  #define AXIS6_MOTOR_STEPS_PER_DEGREE  AXIS6_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS6_SERVO_DC_PWR_MIN
   #define AXIS6_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1525,13 +1583,13 @@
   #define AXIS6_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS6_PID_P
-  #define AXIS6_PID_P                   2.0
+  #define AXIS6_PID_P                   0.0
   #endif
   #ifndef AXIS6_PID_I
-  #define AXIS6_PID_I                   5.0
+  #define AXIS6_PID_I                   0.0
   #endif
   #ifndef AXIS6_PID_D
-  #define AXIS6_PID_D                   1.0
+  #define AXIS6_PID_D                   0.0
   #endif
 
   #ifndef AXIS6_SERVO_FLTR
@@ -1552,12 +1610,19 @@
   #define AXIS6_KTECH_PRESENT
 #endif
 
+#if AXIS6_DRIVER_MODEL == MKS42D
+  #define AXIS6_MKS42D_PRESENT
+#endif
+
 // focuser settings, FOCUSER4
 #ifndef AXIS7_DRIVER_MODEL
 #define AXIS7_DRIVER_MODEL            OFF
 #endif
 #ifndef AXIS7_STEPS_PER_MICRON
 #define AXIS7_STEPS_PER_MICRON        0.5
+#endif
+#ifndef AXIS7_COUNTS_PER_MICRON
+#define AXIS7_COUNTS_PER_MICRON       AXIS7_STEPS_PER_MICRON
 #endif
 #ifndef AXIS7_REVERSE
 #define AXIS7_REVERSE                 OFF
@@ -1594,9 +1659,6 @@
 #endif
 #ifndef AXIS7_LIMIT_MAX
 #define AXIS7_LIMIT_MAX               50
-#endif
-#ifndef AXIS7_SYNC_THRESHOLD
-#define AXIS7_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS7_HOME_DEFAULT
 #define AXIS7_HOME_DEFAULT            MIDDLE
@@ -1673,9 +1735,6 @@
   #ifndef AXIS7_SERVO_VELOCITY_PWMTHRS
   #define AXIS7_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS7_MOTOR_STEPS_PER_DEGREE
-  #define AXIS7_MOTOR_STEPS_PER_DEGREE  AXIS7_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS7_SERVO_DC_PWR_MIN
   #define AXIS7_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1687,13 +1746,13 @@
   #define AXIS7_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS7_PID_P
-  #define AXIS7_PID_P                   2.0
+  #define AXIS7_PID_P                   0.0
   #endif
   #ifndef AXIS7_PID_I
-  #define AXIS7_PID_I                   5.0
+  #define AXIS7_PID_I                   0.0
   #endif
   #ifndef AXIS7_PID_D
-  #define AXIS7_PID_D                   1.0
+  #define AXIS7_PID_D                   0.0
   #endif
 
   #ifndef AXIS7_SERVO_FLTR
@@ -1714,12 +1773,19 @@
   #define AXIS7_KTECH_PRESENT
 #endif
 
+#if AXIS7_DRIVER_MODEL == MKS42D
+  #define AXIS7_MKS42D_PRESENT
+#endif
+
 // focuser settings, FOCUSER5
 #ifndef AXIS8_DRIVER_MODEL
 #define AXIS8_DRIVER_MODEL            OFF
 #endif
 #ifndef AXIS8_STEPS_PER_MICRON
 #define AXIS8_STEPS_PER_MICRON        0.5
+#endif
+#ifndef AXIS8_COUNTS_PER_MICRON
+#define AXIS8_COUNTS_PER_MICRON       AXIS8_STEPS_PER_MICRON
 #endif
 #ifndef AXIS8_REVERSE
 #define AXIS8_REVERSE                 OFF
@@ -1756,9 +1822,6 @@
 #endif
 #ifndef AXIS8_LIMIT_MAX
 #define AXIS8_LIMIT_MAX               50
-#endif
-#ifndef AXIS8_SYNC_THRESHOLD
-#define AXIS8_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS8_HOME_DEFAULT
 #define AXIS8_HOME_DEFAULT            MIDDLE
@@ -1836,9 +1899,6 @@
   #ifndef AXIS8_SERVO_VELOCITY_PWMTHRS
   #define AXIS8_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS8_MOTOR_STEPS_PER_DEGREE
-  #define AXIS8_MOTOR_STEPS_PER_DEGREE  AXIS8_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS8_SERVO_DC_PWR_MIN
   #define AXIS8_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -1850,13 +1910,13 @@
   #define AXIS8_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS8_PID_P
-  #define AXIS8_PID_P                   2.0
+  #define AXIS8_PID_P                   0.0
   #endif
   #ifndef AXIS8_PID_I
-  #define AXIS8_PID_I                   5.0
+  #define AXIS8_PID_I                   0.0
   #endif
   #ifndef AXIS8_PID_D
-  #define AXIS8_PID_D                   1.0
+  #define AXIS8_PID_D                   0.0
   #endif
 
   #ifndef AXIS8_SERVO_FLTR
@@ -1877,12 +1937,19 @@
   #define AXIS8_KTECH_PRESENT
 #endif
 
+#if AXIS8_DRIVER_MODEL == MKS42D
+  #define AXIS8_MKS42D_PRESENT
+#endif
+
 // focuser settings, FOCUSER6
 #ifndef AXIS9_DRIVER_MODEL
 #define AXIS9_DRIVER_MODEL            OFF
 #endif
 #ifndef AXIS9_STEPS_PER_MICRON
 #define AXIS9_STEPS_PER_MICRON        0.5
+#endif
+#ifndef AXIS9_COUNTS_PER_MICRON
+#define AXIS9_COUNTS_PER_MICRON       AXIS9_STEPS_PER_MICRON
 #endif
 #ifndef AXIS9_REVERSE
 #define AXIS9_REVERSE                 OFF
@@ -1919,9 +1986,6 @@
 #endif
 #ifndef AXIS9_LIMIT_MAX
 #define AXIS9_LIMIT_MAX               50
-#endif
-#ifndef AXIS9_SYNC_THRESHOLD
-#define AXIS9_SYNC_THRESHOLD          OFF
 #endif
 #ifndef AXIS9_HOME_DEFAULT
 #define AXIS9_HOME_DEFAULT            MIDDLE
@@ -1999,9 +2063,6 @@
   #ifndef AXIS9_SERVO_VELOCITY_PWMTHRS
   #define AXIS9_SERVO_VELOCITY_PWMTHRS  OFF
   #endif                            
-  #ifndef AXIS9_MOTOR_STEPS_PER_DEGREE
-  #define AXIS9_MOTOR_STEPS_PER_DEGREE  AXIS9_STEPS_PER_DEGREE
-  #endif   
   #ifndef AXIS9_SERVO_DC_PWR_MIN
   #define AXIS9_SERVO_DC_PWR_MIN        0.0F
   #endif
@@ -2013,13 +2074,13 @@
   #define AXIS9_SERVO_FEEDBACK          PID
   #endif
   #ifndef AXIS9_PID_P
-  #define AXIS9_PID_P                   2.0
+  #define AXIS9_PID_P                   0.0
   #endif
   #ifndef AXIS9_PID_I
-  #define AXIS9_PID_I                   5.0
+  #define AXIS9_PID_I                   0.0
   #endif
   #ifndef AXIS9_PID_D
-  #define AXIS9_PID_D                   1.0
+  #define AXIS9_PID_D                   0.0
   #endif
 
   #ifndef AXIS9_SERVO_FLTR
@@ -2038,6 +2099,10 @@
 
 #if AXIS9_DRIVER_MODEL == KTECH
   #define AXIS9_KTECH_PRESENT
+#endif
+
+#if AXIS9_DRIVER_MODEL == MKS42D
+  #define AXIS9_MKS42D_PRESENT
 #endif
 
 // -----------------------------------------------------------------------------------
@@ -2137,11 +2202,19 @@
 // flag presence of ODRIVE motors
 #if defined(AXIS1_ODRIVE_PRESENT) || defined(AXIS2_ODRIVE_PRESENT)
   #define ODRIVE_MOTOR_PRESENT
+  #ifndef ODRIVE_ABSOLUTE
+    #define ODRIVE_ABSOLUTE OFF
+  #endif
 #endif
 
 // flag presence of KTECH motors
 #if DRIVER_CHECK(KTECH)
   #define KTECH_MOTOR_PRESENT
+#endif
+
+// flag presence of MKS SERVO42D/57D motors
+#if DRIVER_CHECK(MKS42D)
+  #define MKS42D_MOTOR_PRESENT
 #endif
 
 // flag to indicate if any motor is present
@@ -2328,8 +2401,78 @@
 #define FEATURE8_ON_STATE             HIGH
 #endif
 
-// thermistor configuration settings to support two types
+// auxiliary feature power monitor configuration
 
+// fan control
+#ifndef FAN_PIN
+#define FAN_PIN                       OFF                           // PWM capable pin to run a small fan to help cool the controller
+#endif
+#ifndef FAN_THRESHOLD_LOW
+#define FAN_THRESHOLD_LOW             35                            // Deg. C
+#endif
+#ifndef FAN_POWER_LOW
+#define FAN_POWER_LOW                 60                            // %
+#endif
+#ifndef FAN_THRESHOLD_MID
+#define FAN_THRESHOLD_MID             45                            // Deg. C
+#endif
+#ifndef FAN_POWER_MID
+#define FAN_POWER_MID                 80                            // %
+#endif
+#ifndef FAN_THRESHOLD_HIGH
+#define FAN_THRESHOLD_HIGH            50                            // Deg. C
+#endif
+#ifndef FAN_POWER_HIGH
+#define FAN_POWER_HIGH                100                           // %
+#endif
+#ifndef FAN_THRESHOLD_OT
+#define FAN_THRESHOLD_OT              60                            // turn off all channels if MCU temperature exceeds this (Deg. C)
+#endif
+#if defined(FAN_PIN)
+  #define POWER_MONITOR_FAN_PRESENT
+#endif
+
+// voltage sensing
+//#define V_SENSE_PINS {OFF,OFF,OFF,OFF,OFF,OFF,OFF,OFF}            // an array of pin#'s corresponding to auxiliary features 1..8
+#ifndef V_SENSE_FORMULA
+#define V_SENSE_FORMULA               (v*18.405)                    // scales up typical 0..3.3V to actual V (47k/2.7k resistor voltage divider)
+#endif
+#ifndef V_SENSE_LIMIT_LOW
+#define V_SENSE_LIMIT_LOW             10.5                          // 12V nominal, low limit below this all channels are turned OFF
+#endif
+#ifndef V_SENSE_LIMIT_HIGH
+#define V_SENSE_LIMIT_HIGH            13.8                          // 12V nominal, high limit above this all channels are turned OFF
+#endif
+#ifndef V_SENSE_LIMIT_EXCLUDE
+#define V_SENSE_LIMIT_EXCLUDE         OFF                           // allow excluding pin# from the checks (variable voltage output)
+#endif
+#if defined(V_SENSE_PINS) && defined(V_SENSE_FORMULA)
+  #define POWER_MONITOR_VOLTAGE_PRESENT
+#endif
+
+// current sensing
+//#define I_SENSE_PINS {OFF,OFF,OFF,OFF,OFF,OFF,OFF,OFF}            // an array of pin#'s corresponding to auxiliary features 1..8
+#ifndef I_SENSE_FORMULA
+#define I_SENSE_FORMULA               (-((v-1.65)/0.09))            // nominal 3.3V Vcc/2 (at 0A) with scaling (down) at 0.09V/Amp
+#endif
+#ifndef I_SENSE_CHANNEL_MAX
+#define I_SENSE_CHANNEL_MAX {OFF,OFF,OFF,OFF,OFF,OFF,OFF,OFF}       // turn off individual channel (1..8) if current exceeds this (Amps)
+#endif
+#ifndef I_SENSE_COMBINED_MAX
+#define I_SENSE_COMBINED_MAX          12                            // turn off all channels if combined current exceeds this (Amps)
+#endif
+#if defined(I_SENSE_PINS) && defined(I_SENSE_FORMULA)
+  #define POWER_MONITOR_CURRENT_PRESENT
+#endif
+
+#if defined(POWER_MONITOR_VOLTAGE_PRESENT) && defined(POWER_MONITOR_CURRENT_PRESENT)
+  #define POWER_MONITOR_PRESENT
+#endif
+
+// -----------------------------------------------------------------------------------
+// thermistor configuration settings
+
+// type 1
 #ifndef THERMISTOR1_TNOM
 #define THERMISTOR1_TNOM              25                          // nominal temperature (Celsius)
 #endif
@@ -2343,6 +2486,7 @@
 #define THERMISTOR1_RSERIES           4700                        // series resistor value (Ohms)
 #endif
 
+// type 2
 #ifndef THERMISTOR2_TNOM
 #define THERMISTOR2_TNOM              25                          // nominal temperature (Celsius)
 #endif
@@ -2355,3 +2499,4 @@
 #ifndef THERMISTOR2_RSERIES
 #define THERMISTOR2_RSERIES           4700                        // series resistor value (Ohms)
 #endif
+

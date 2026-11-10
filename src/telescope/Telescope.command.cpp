@@ -8,6 +8,8 @@
 #include "../lib/tasks/OnTask.h"
 #include "../lib/gpioEx/GpioEx.h"
 #include "../lib/nv/Nv.h"
+
+#include "../lib/analog/Analog.h"
 #include "../lib/convert/Convert.h"
 
 #include "../libApp/commands/ProcessCmds.h"
@@ -34,61 +36,61 @@
   HAL_RESET_FUNC;
 #endif
 
-bool Telescope::command(char reply[], char command[], char parameter[], bool *supressFrame, bool *numericReply, CommandError *commandError) {
+bool Telescope::command(char reply[], char command[], char parameter[], bool *suppressFrame, bool *numericReply, CommandError *commandError) {
 
   #if PLUGIN1 != OFF && PLUGIN1_COMMAND_PROCESSING == ON
-    if (PLUGIN1.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN1.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN2 != OFF && PLUGIN2_COMMAND_PROCESSING == ON
-    if (PLUGIN2.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN2.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN3 != OFF && PLUGIN3_COMMAND_PROCESSING == ON
-    if (PLUGIN3.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN3.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN4 != OFF && PLUGIN4_COMMAND_PROCESSING == ON
-    if (PLUGIN4.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN4.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN5 != OFF && PLUGIN5_COMMAND_PROCESSING == ON
-    if (PLUGIN5.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN5.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN6 != OFF && PLUGIN6_COMMAND_PROCESSING == ON
-    if (PLUGIN6.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN6.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN7 != OFF && PLUGIN7_COMMAND_PROCESSING == ON
-    if (PLUGIN7.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN7.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
   #if PLUGIN8 != OFF && PLUGIN8_COMMAND_PROCESSING == ON
-    if (PLUGIN8.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (PLUGIN8.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
 
   #ifdef MOUNT_PRESENT
-    if (mount.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (guide.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (mount.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (guide.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
     #if GPIO_DEVICE != OFF
-      if (gpio.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+      if (gpio.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
     #endif
-    if (mountStatus.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (goTo.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (park.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (library.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (site.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (limits.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (home.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (pec.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (axis1.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
-    if (axis2.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+    if (mountStatus.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (goTo.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (park.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (library.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (site.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (limits.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (home.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (pec.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (axis1.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
+    if (axis2.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
 
-  #ifdef ROTATOR_PRESENT
-    if (rotator.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+  #if defined(ROTATOR_PRESENT) || defined(ROTATOR_CLIENT_PRESENT)
+    if (rotator.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
 
-  #ifdef FOCUSER_PRESENT
-    if (focuser.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+  #if defined(FOCUSER_PRESENT) || defined(FOCUSER_CLIENT_PRESENT)
+    if (focuser.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
 
-  #ifdef FEATURES_PRESENT
-    if (features.command(reply, command, parameter, supressFrame, numericReply, commandError)) return true;
+   #if defined(FEATURES_PRESENT) || defined(FEATURES_CLIENT_PRESENT)
+    if (features.command(reply, command, parameter, suppressFrame, numericReply, commandError)) return true;
   #endif
 
   //  B - Reticle/Accessory Control
@@ -106,10 +108,13 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
       if (command[1] == '-') reticleBrightness += scale;
       if (reticleBrightness > 255) reticleBrightness = 255;
       if (command[1] == '+') reticleBrightness -= scale;
-      if (reticleBrightness < 0)   reticleBrightness = 0;
-      analogWrite(RETICLE_LED_PIN, analog8BitToAnalogRange(RETICLE_LED_INVERT == ON ? 255 - reticleBrightness : reticleBrightness));
+      if (reticleBrightness < 0) reticleBrightness = 0;
+
+      float duty = (float)reticleBrightness*(1.0F/255.0F);
+      analog.write(RETICLE_LED_PIN, RETICLE_LED_INVERT == ON ? duty : 1.0F - duty);
+
       #if RETICLE_LED_MEMORY == ON
-        nv.write(NV_TELESCOPE_SETTINGS_BASE, reticleBrightness);
+        nv().kv().put("TELESCOPE_SETTINGS", reticleBrightness);
       #endif
     #endif
     *numericReply = false;
@@ -123,7 +128,7 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
       // spaces are encoded as '_'
       for (unsigned int i = 0; i < strlen(parameter); i++) if (parameter[i] == '_') parameter[i] = ' ';
       // prefix with "REM> "
-      if (strstr(parameter, "ERR:") == parameter || strstr(parameter, "WRN:") == parameter || strstr(parameter, "MSG:") == parameter) D("REM> ");
+      if (strstr(parameter, "ERR:") == parameter || strstr(parameter, "WRN:") == parameter || strstr(parameter, "MSG:") == parameter) { D("REM> "); }
       // a newline is encoded as '&' in the last char of message
       int l = strlen(parameter);
       if (l > 0 && parameter[l - 1] == '&') { parameter[l - 1] = 0; DL(parameter); } else { D(parameter); }
@@ -133,18 +138,49 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
     // :ERESET#   Reset the MCU
     //            Returns: Nothing
     if (command[1] == 'R' && parameter[0] == 'E' && parameter[1] == 'S' && parameter[2] == 'E' && parameter[3] == 'T' && parameter[4] == 0) {
+
       #ifdef HAL_RESET
-        nv.wait();
-        tasks.yield(1000);
-        HAL_RESET();
+        VLF("MSG: Mount, flushing NV/EEPROM before reset...");
+        bool flushOk = !nv().active().hasCommit() || nv().active().commit() == NvDevice::IoStatus::Ok;
+        const uint32_t startMs = millis();
+        const uint32_t timeoutMs = 30000;
+        // The priority-7 NV service cannot run while this priority-5 command
+        // yields. Service it explicitly so cached writes can finish.
+        while (flushOk && !nv().active().commitDone() && (uint32_t)(millis() - startMs) < timeoutMs) {
+          nv().poll();
+          tasks.yield(1);
+        }
+        if (flushOk && nv().active().commitDone()) {
+          VLF("MSG: Mount, resetting OnStep...");
+          tasks.yield(1000);
+          HAL_RESET();
+        } else {
+          DLF("WRN: Mount, NV/EEPROM flush failed or timed out; reset cancelled");
+          *commandError = CE_0;
+        }
       #endif
+
       *numericReply = false;
     } else
 
-    // :ENVRESET# Wipe flash
+    // :ENVRESET# Reset NV memory to defaults on the next boot
     if (command[1] == 'N' && parameter[0] == 'V' && parameter[1] == 'R' && parameter[2] == 'E' && parameter[3] == 'S' && parameter[4] == 'E' && parameter[5] == 'T' && parameter[6] == 0) {
-      nv.writeKey(0);
-      strcpy(reply, "NV memory will be cleared on the next boot.");
+      bool flushOk = nv().volume().invalidateNextMount() == NvVolume::Status::Ok;
+      if (flushOk && nv().active().hasCommit()) flushOk = nv().active().commit() == NvDevice::IoStatus::Ok;
+      const uint32_t startMs = millis();
+      const uint32_t timeoutMs = 30000;
+      // Service NV here: yielding from a command cannot run its lower-priority task.
+      while (flushOk && !nv().active().commitDone() && (uint32_t)(millis() - startMs) < timeoutMs) {
+        nv().poll();
+        tasks.yield(1);
+      }
+      if (flushOk && nv().active().commitDone()) {
+        strcpy(reply, "NV memory will be cleared on the next boot.");
+      } else {
+        DLF("WRN: Mount, NV reset write failed or timed out");
+        *commandError = CE_0;
+        strcpy(reply, "NV reset failed; retry before rebooting.");
+      }
       *numericReply = false;
     } else
 
@@ -193,7 +229,7 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
       if (parameter[0] == 'N') sprintf(reply, "%i.%02i%s", firmware.version.major, firmware.version.minor, firmware.version.patch); else
       if (parameter[0] == 'P') strcpy(reply, firmware.name); else
       if (parameter[0] == 'T') strcpy(reply, firmware.time); else
-      if (parameter[0] == 'C') { sstrcpy(reply, PRODUCT_DESCRIPTION, 40); } else
+      if (parameter[0] == 'C') { strncpy(reply, PRODUCT_DESCRIPTION, 40); } else
       if (parameter[0] == 'H') strcpy(reply, PINMAP_STR); else *commandError = CE_CMD_UNKNOWN;
       *numericReply = false;
     } else
@@ -239,15 +275,6 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
             *commandError = CE_0;
           }
         } else return false;
-      } else
-
-      if (parameter[0] == 'A') {
-        // :GXA0#     Get axis/driver revert all state
-        //            Returns: Value
-        if (parameter[1] == '0') {
-          uint16_t axesToRevert = nv.readUI(NV_AXIS_SETTINGS_REVERT);
-          if (!(axesToRevert & 1)) *commandError = CE_0;
-        } else return false;
       } else return false;
 
     } else return false;
@@ -276,25 +303,6 @@ bool Telescope::command(char reply[], char command[], char parameter[], bool *su
       if (parameter[1] == 'C') {
         if (!weather.setHumidity(f)) *commandError = CE_PARAM_RANGE;
       } else return false;
-    } else
-
-    if (parameter[0] == 'A') {
-      // :SXAC,0#   for run-time NV (EEPROM) axis settings
-      // :SXAC,1#   for compile-time Config.h axis settings
-      //            Return: 0 failure, 1 success
-      if (parameter[1] == 'C' && parameter[4] == 0) {
-        if (parameter[3] == '0' || parameter[3] == '1') {
-          uint16_t axesToRevert = nv.readUI(NV_AXIS_SETTINGS_REVERT);
-          if (parameter[3] == '0') {
-             VLF("MSG: Using Axes settings from NV (EEPROM)");
-             bitSet(axesToRevert, 0);
-           } else {
-             VLF("MSG: Using Axes settings from Config.h");
-             bitClear(axesToRevert, 0);
-           }
-          nv.update(NV_AXIS_SETTINGS_REVERT, axesToRevert);
-        } else *commandError = CE_PARAM_RANGE;
-      }
     } else return false;
   } else return false;
 

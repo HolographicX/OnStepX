@@ -29,14 +29,27 @@ enum TrackingState: uint8_t    {TS_NONE, TS_SIDEREAL};
 
 #pragma pack(1)
 #define MountSettingsSize 9
+
 typedef struct Backlash {
   float axis1;
   float axis2;
 } Backlash;
+
 typedef struct MountSettings {
   RateCompensation rc;
   Backlash backlash;
+  uint8_t mountType;
 } MountSettings;
+
+typedef struct MountPositionMemory {
+  float a1;
+  float a2;
+  uint8_t mountType:4;
+  uint8_t seq:2;
+  uint8_t untrusted:1;
+  uint8_t reserved:1;
+} MountPositionMemory;
+
 #pragma pack()
 
 extern Axis axis1;
@@ -47,7 +60,7 @@ class Mount {
     void init();
     void begin();
 
-    bool command(char *reply, char *command, char *parameter, bool *supressFrame, bool *numericReply, CommandError *commandError);
+    bool command(char *reply, char *command, char *parameter, bool *suppressFrame, bool *numericReply, CommandError *commandError);
 
     // get current equatorial position (Native coordinate system)
     Coordinate getPosition(CoordReturn coordReturn = CR_MOUNT_EQU);
@@ -57,6 +70,9 @@ class Mount {
 
     // returns true if either of the mount motor drivers report a fault
     inline bool motorFault() { return axis1.motorFault() || axis2.motorFault(); }
+
+    // true when either motor has an absolute encoder or SWS supplied trusted absolute positions
+    bool hasAbsoluteEncoders() const;
 
     // returns true if the mount is at the home (startup) position
     inline bool isHome() {
@@ -78,7 +94,6 @@ class Mount {
     inline bool isTracking() { return trackingState == TS_SIDEREAL; }
 
     // enables or disables power to the mount motors
-    // first enable starts the mount status indications
     void enable(bool state);
 
     // returns true if the mount motors are powered on
@@ -86,6 +101,13 @@ class Mount {
 
     // true if syncing only from OnStep to the Encoders
     bool syncFromOnStepToEncoders = false;
+
+    void captureNominalIndexPositions();
+    long getNominalIndexPositionSteps(uint8_t axisNumber) const;
+
+    #if MOUNT_COORDS_MEMORY == ON
+      void saveCoordinateMemory(bool trusted);
+    #endif
 
     // updates the tracking rates, etc. as appropriate for the mount state
     // called once a second by poll() but available here for immediate action
@@ -100,9 +122,13 @@ class Mount {
     float trackingRateOffsetRA = 0.0F;
     float trackingRateOffsetDec = 0.0F;
 
-    MountSettings settings = {RC_DEFAULT, { 0, 0 }};
+    MountSettings settings = {RC_DEFAULT, { 0, 0 }, MOUNT_SUBTYPE};
 
   private:
+    bool swsAbsoluteEncodersPresent = false;
+    // calculate tracking and transformed pulse-guide rates in sidereal units
+    void calculateTrackingRates();
+
     // alternate tracking rate calculation method
     float ztr(float a);
 
@@ -115,28 +141,22 @@ class Mount {
     Coordinate current;
 
     TrackingState trackingState = TS_NONE;
+
+    uint32_t nvKey;
+
+    #if MOUNT_COORDS_MEMORY == ON
+      uint32_t nvKeyLastA, nvKeyLastB;
+      MountPositionMemory lastPosition;
+    #endif
+
+    long nominalIndexAxis1Steps = 0;
+    long nominalIndexAxis2Steps = 0;
 };
 
-#ifdef AXIS1_STEP_DIR_PRESENT
-  extern StepDirMotor motor1;
-#elif defined(AXIS1_SERVO_PRESENT)
-  extern ServoMotor motor1;
-#elif defined(AXIS1_ODRIVE_PRESENT)
-  extern ODriveMotor motor1;
-#elif defined(AXIS1_KTECH_PRESENT)
-  extern KTechMotor motor1;
-#endif
+extern Motor& motor1;
 extern Axis axis1;
 
-#ifdef AXIS2_STEP_DIR_PRESENT
-  extern StepDirMotor motor2;
-#elif defined(AXIS2_SERVO_PRESENT)
-  extern ServoMotor motor2;
-#elif defined(AXIS2_ODRIVE_PRESENT)
-  extern ODriveMotor motor2;
-#elif defined(AXIS2_KTECH_PRESENT)
-  extern KTechMotor motor2;
-#endif
+extern Motor& motor2;
 extern Axis axis2;
 
 extern Mount mount;

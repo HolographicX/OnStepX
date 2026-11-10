@@ -1,21 +1,27 @@
 //--------------------------------------------------------------------------------------------------
-// telescope mount control, axis instances
+// telescope mount control, axis2 and axis3
 
 #include "Mount.h"
 
 #ifdef MOUNT_PRESENT
 
-#ifdef AXIS1_ODRIVE_PRESENT
+// Axis2 motion controller
+
+namespace {
+
+#if defined(AXIS1_ODRIVE_PRESENT)
   const ODriveDriverSettings DriverSettingsAxis1 = {AXIS1_DRIVER_MODEL, AXIS1_DRIVER_STATUS};
-  ODriveMotor motor1(1, AXIS1_REVERSE, &DriverSettingsAxis1, (AXIS1_STEPS_PER_DEGREE*RAD_DEG_RATIO));
-#endif
+  ODriveMotor motor_1(1, AXIS1_REVERSE, &DriverSettingsAxis1, (AXIS1_COUNTS_PER_DEGREE*RAD_DEG_RATIO));
 
-#ifdef AXIS1_KTECH_PRESENT
+#elif defined(AXIS1_KTECH_PRESENT)
   const KTechDriverSettings DriverSettingsAxis1 = {AXIS1_DRIVER_MODEL, AXIS1_DRIVER_STATUS};
-  KTechMotor motor1(1, AXIS1_REVERSE, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE);
-#endif
+  KTechMotor motor_1(1, AXIS1_REVERSE, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE);
 
-#ifdef AXIS1_SERVO_PRESENT
+#elif defined(AXIS1_MKS42D_PRESENT)
+  const MksDriverSettings DriverSettingsAxis1 = {AXIS1_DRIVER_MODEL, AXIS1_DRIVER_STATUS};
+  Mks42DMotor motor_1(1, AXIS1_REVERSE, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE);
+
+#elif defined(AXIS1_SERVO_PRESENT)
   ServoControl servoControlAxis1;
 
   #if AXIS1_ENCODER == AB
@@ -56,8 +62,6 @@
     // nothing to do as this is auotmatically created... LearningFilter filterAxis1(AXIS1_SERVO_FLTR_WSIZE, 240);
   #elif AXIS1_SERVO_FLTR == ROLLING
     RollingFilter filterAxis1(AXIS1_SERVO_FLTR_WSIZE);
-  #elif AXIS1_SERVO_FLTR == WINDOWING
-    WindowingFilter filterAxis1(AXIS1_SERVO_FLTR_WSIZE);
   #elif AXIS1_SERVO_FLTR == OFF
     Filter filterAxis1;
   #endif
@@ -70,21 +74,20 @@
   #elif AXIS1_DRIVER_MODEL == SERVO_PE
     ServoPE driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_SERVO_DC_PWR_MIN, AXIS1_SERVO_DC_PWR_MAX);
   #elif AXIS1_DRIVER_MODEL == SERVO_TMC2130_DC
-    ServoTmc5160DC driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_SERVO_DC_PWR_MIN, AXIS1_SERVO_DC_PWR_MAX);
-  #elif AXIS1_DRIVER_MODEL == SERVO_TMC5160_DC
     ServoTmc2130DC driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_SERVO_DC_PWR_MIN, AXIS1_SERVO_DC_PWR_MAX);
+  #elif AXIS1_DRIVER_MODEL == SERVO_TMC5160_DC
+    ServoTmc5160DC driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_SERVO_DC_PWR_MIN, AXIS1_SERVO_DC_PWR_MAX);
   #elif AXIS1_DRIVER_MODEL == SERVO_TMC2209
-    ServoTmc2209 driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_MOTOR_STEPS_PER_DEGREE/AXIS1_STEPS_PER_DEGREE, AXIS1_DRIVER_MICROSTEPS, AXIS1_DRIVER_IRUN, AXIS1_DRIVER_DECAY, AXIS1_DRIVER_DECAY_GOTO);
+    ServoTmc2209 driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE/AXIS1_COUNTS_PER_DEGREE, AXIS1_DRIVER_MICROSTEPS, AXIS1_DRIVER_IRUN, AXIS1_DRIVER_DECAY, AXIS1_DRIVER_DECAY_GOTO);
   #elif AXIS1_DRIVER_MODEL == SERVO_TMC5160
-    ServoTmc5160 driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_MOTOR_STEPS_PER_DEGREE/AXIS1_STEPS_PER_DEGREE, AXIS1_DRIVER_MICROSTEPS, AXIS1_DRIVER_IRUN, AXIS1_DRIVER_DECAY, AXIS1_DRIVER_DECAY_GOTO);
+    ServoTmc5160 driver1(1, &DriverPinsAxis1, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE/AXIS1_COUNTS_PER_DEGREE, AXIS1_DRIVER_MICROSTEPS, AXIS1_DRIVER_IRUN, AXIS1_DRIVER_DECAY, AXIS1_DRIVER_DECAY_GOTO);
   #elif AXIS1_DRIVER_MODEL == SERVO_KTECH
-    ServoKTech driver1(1, &DriverSettingsAxis1, AXIS1_MOTOR_STEPS_PER_DEGREE/AXIS1_STEPS_PER_DEGREE);
+    ServoKTech driver1(1, &DriverSettingsAxis1, AXIS1_STEPS_PER_DEGREE/AXIS1_COUNTS_PER_DEGREE);
   #endif
 
-  ServoMotor motor1(1, AXIS1_REVERSE, ((ServoDriver*)&driver1), &filterAxis1, &encAxis1, AXIS1_ENCODER_ORIGIN, AXIS1_ENCODER_REVERSE == ON, &feedbackAxis1, &servoControlAxis1, AXIS1_SYNC_THRESHOLD);
-#endif
+  ServoMotor motor_1(1, AXIS1_REVERSE, ((ServoDriver*)&driver1), &filterAxis1, &encAxis1, AXIS1_ENCODER_ORIGIN, AXIS1_ENCODER_REVERSE == ON, &feedbackAxis1, &servoControlAxis1);
 
-#ifdef AXIS1_STEP_DIR_PRESENT
+#elif defined(AXIS1_STEP_DIR_PRESENT)
   const StepDirDriverPins DriverPinsAxis1 = {AXIS1_M0_PIN, AXIS1_M1_PIN, AXIS1_M2_PIN, AXIS1_M2_ON_STATE, AXIS1_M3_PIN, AXIS1_DECAY_PIN, AXIS1_FAULT_PIN};
   const StepDirDriverSettings DriverSettingsAxis1 = {AXIS1_DRIVER_MODEL, AXIS1_DRIVER_STATUS, AXIS1_DRIVER_MICROSTEPS, AXIS1_DRIVER_MICROSTEPS_GOTO, AXIS1_DRIVER_DECAY, AXIS1_DRIVER_DECAY_GOTO};
   #if AXIS1_DRIVER_MODEL >= STEP_DIR_DRIVER_FIRST && AXIS1_DRIVER_MODEL < TMC_DRIVER_FIRST
@@ -106,24 +109,37 @@
   #endif
 
   const StepDirPins StepDirPinsAxis1 = {AXIS1_STEP_PIN, AXIS1_STEP_STATE, AXIS1_DIR_PIN, AXIS1_ENABLE_PIN, AXIS1_ENABLE_STATE};
-  StepDirMotor motor1(1, AXIS1_REVERSE, &StepDirPinsAxis1, ((StepDirDriver*)&driver1));
+  StepDirMotor motor_1(1, AXIS1_REVERSE, &StepDirPinsAxis1, ((StepDirDriver*)&driver1));
+
+#else
+  #error "Configuration (Config.h): MOUNT_PRESENT without AXIS1_DRIVER_MODEL should never happen!"
 #endif
 
 const AxisPins PinsAxis1 = {AXIS1_SENSE_LIMIT_MIN_PIN, AXIS1_SENSE_HOME_PIN, AXIS1_SENSE_LIMIT_MAX_PIN, {AXIS1_SENSE_HOME, AXIS1_SENSE_HOME_INIT, degToRadF(AXIS1_SENSE_HOME_DIST_LIMIT), AXIS1_SENSE_LIMIT_MIN, AXIS1_SENSE_LIMIT_MAX, AXIS1_SENSE_LIMIT_INIT}};
-const AxisSettings SettingsAxis1 = {AXIS1_STEPS_PER_DEGREE*RAD_DEG_RATIO, {degToRadF(AXIS1_LIMIT_MIN), degToRadF(AXIS1_LIMIT_MAX)}, siderealToRad(TRACK_BACKLASH_RATE)};
+const AxisSettings SettingsAxis1 = {AXIS1_COUNTS_PER_DEGREE*RAD_DEG_RATIO, {degToRadF(AXIS1_LIMIT_MIN), degToRadF(AXIS1_LIMIT_MAX)}, siderealToRad(TRACK_BACKLASH_RATE)};
+}
+
+Motor& motor1 = motor_1;
+
 Axis axis1(1, &PinsAxis1, &SettingsAxis1, AXIS_MEASURE_RADIANS, arcsecToRad(AXIS1_TARGET_TOLERANCE));
 
-#ifdef AXIS2_ODRIVE_PRESENT
+// Axis2 motion controller
+
+namespace {
+
+#if defined(AXIS2_ODRIVE_PRESENT)
   const ODriveDriverSettings DriverSettingsAxis2 = {AXIS2_DRIVER_MODEL, AXIS2_DRIVER_STATUS};
-  ODriveMotor motor2(2, AXIS2_REVERSE, &DriverSettingsAxis2, (AXIS2_STEPS_PER_DEGREE*RAD_DEG_RATIO));
-#endif
+  ODriveMotor motor_2(2, AXIS2_REVERSE, &DriverSettingsAxis2, (AXIS2_COUNTS_PER_DEGREE*RAD_DEG_RATIO));
 
-#ifdef AXIS2_KTECH_PRESENT
+#elif defined(AXIS2_KTECH_PRESENT)
   const KTechDriverSettings DriverSettingsAxis2 = {AXIS2_DRIVER_MODEL, AXIS2_DRIVER_STATUS};
-  KTechMotor motor2(2, AXIS2_REVERSE, &DriverSettingsAxis2);
-#endif
+  KTechMotor motor_2(2, AXIS2_REVERSE, &DriverSettingsAxis2);
 
-#ifdef AXIS2_SERVO_PRESENT
+#elif defined(AXIS2_MKS42D_PRESENT)
+  const MksDriverSettings DriverSettingsAxis2 = {AXIS2_DRIVER_MODEL, AXIS2_DRIVER_STATUS};
+  Mks42DMotor motor_2(2, AXIS2_REVERSE, &DriverSettingsAxis2, AXIS2_STEPS_PER_DEGREE);
+
+#elif defined(AXIS2_SERVO_PRESENT)
   ServoControl servoControlAxis2;
 
   #if AXIS2_ENCODER == AB
@@ -162,8 +178,6 @@ Axis axis1(1, &PinsAxis1, &SettingsAxis1, AXIS_MEASURE_RADIANS, arcsecToRad(AXIS
     KalmanFilter filterAxis2(AXIS2_SERVO_FLTR_MEAS_U, AXIS2_SERVO_FLTR_VARIANCE);
   #elif AXIS2_SERVO_FLTR == ROLLING
     RollingFilter filterAxis2(AXIS2_SERVO_FLTR_WSIZE);
-  #elif AXIS2_SERVO_FLTR == WINDOWING
-    WindowingFilter filterAxis2(AXIS2_SERVO_FLTR_WSIZE);
   #elif AXIS2_SERVO_FLTR == OFF
     Filter filterAxis2;
   #endif
@@ -180,18 +194,16 @@ Axis axis1(1, &PinsAxis1, &SettingsAxis1, AXIS_MEASURE_RADIANS, arcsecToRad(AXIS
   #elif AXIS2_DRIVER_MODEL == SERVO_TMC5160_DC
     ServoTmc5160DC driver2(2, &DriverPinsAxis2, &DriverSettingsAxis2, AXIS2_SERVO_DC_PWR_MIN, AXIS2_SERVO_DC_PWR_MAX);
   #elif AXIS2_DRIVER_MODEL == SERVO_TMC2209
-    ServoTmc2209 driver2(2, &DriverPinsAxis2, &DriverSettingsAxis2, AXIS2_MOTOR_STEPS_PER_DEGREE/AXIS2_STEPS_PER_DEGREE, AXIS2_DRIVER_MICROSTEPS, AXIS2_DRIVER_IRUN, AXIS2_DRIVER_DECAY, AXIS2_DRIVER_DECAY_GOTO);
+    ServoTmc2209 driver2(2, &DriverPinsAxis2, &DriverSettingsAxis2, AXIS2_STEPS_PER_DEGREE/AXIS2_COUNTS_PER_DEGREE, AXIS2_DRIVER_MICROSTEPS, AXIS2_DRIVER_IRUN, AXIS2_DRIVER_DECAY, AXIS2_DRIVER_DECAY_GOTO);
   #elif AXIS2_DRIVER_MODEL == SERVO_TMC5160
-    ServoTmc5160 driver2(2, &DriverPinsAxis2, &DriverSettingsAxis2, AXIS2_MOTOR_STEPS_PER_DEGREE/AXIS2_STEPS_PER_DEGREE, AXIS2_DRIVER_MICROSTEPS, AXIS2_DRIVER_IRUN, AXIS2_DRIVER_DECAY, AXIS2_DRIVER_DECAY_GOTO);
+    ServoTmc5160 driver2(2, &DriverPinsAxis2, &DriverSettingsAxis2, AXIS2_STEPS_PER_DEGREE/AXIS2_COUNTS_PER_DEGREE, AXIS2_DRIVER_MICROSTEPS, AXIS2_DRIVER_IRUN, AXIS2_DRIVER_DECAY, AXIS2_DRIVER_DECAY_GOTO);
   #elif AXIS2_DRIVER_MODEL == SERVO_KTECH
-    ServoKTech driver2(2, &DriverSettingsAxis2, AXIS2_MOTOR_STEPS_PER_DEGREE/AXIS2_STEPS_PER_DEGREE);
+    ServoKTech driver2(2, &DriverSettingsAxis2, AXIS2_STEPS_PER_DEGREE/AXIS2_COUNTS_PER_DEGREE);
   #endif
 
-  ServoMotor motor2(2, AXIS2_REVERSE, ((ServoDriver*)&driver2), &filterAxis2, &encAxis2, AXIS2_ENCODER_ORIGIN, AXIS2_ENCODER_REVERSE == ON, &feedbackAxis2, &servoControlAxis2, AXIS2_SYNC_THRESHOLD);
-  IRAM_ATTR void moveAxis2() { motor2.move(); }
-#endif
+  ServoMotor motor_2(2, AXIS2_REVERSE, ((ServoDriver*)&driver2), &filterAxis2, &encAxis2, AXIS2_ENCODER_ORIGIN, AXIS2_ENCODER_REVERSE == ON, &feedbackAxis2, &servoControlAxis2);
 
-#ifdef AXIS2_STEP_DIR_PRESENT
+#elif defined(AXIS2_STEP_DIR_PRESENT)
   const StepDirDriverPins DriverPinsAxis2 = {AXIS2_M0_PIN, AXIS2_M1_PIN, AXIS2_M2_PIN, AXIS2_M2_ON_STATE, AXIS2_M3_PIN, AXIS2_DECAY_PIN, AXIS2_FAULT_PIN};
   const StepDirDriverSettings DriverSettingsAxis2 = {AXIS2_DRIVER_MODEL, AXIS2_DRIVER_STATUS, AXIS2_DRIVER_MICROSTEPS, AXIS2_DRIVER_MICROSTEPS_GOTO, AXIS2_DRIVER_DECAY, AXIS2_DRIVER_DECAY_GOTO};
   #if AXIS2_DRIVER_MODEL >= STEP_DIR_DRIVER_FIRST && AXIS2_DRIVER_MODEL < TMC_DRIVER_FIRST
@@ -213,11 +225,18 @@ Axis axis1(1, &PinsAxis1, &SettingsAxis1, AXIS_MEASURE_RADIANS, arcsecToRad(AXIS
   #endif
 
   const StepDirPins StepDirPinsAxis2 = {AXIS2_STEP_PIN, AXIS2_STEP_STATE, AXIS2_DIR_PIN, AXIS2_ENABLE_PIN, AXIS2_ENABLE_STATE};
-  StepDirMotor motor2(2, AXIS2_REVERSE, &StepDirPinsAxis2, ((StepDirDriver*)&driver2));
+  StepDirMotor motor_2(2, AXIS2_REVERSE, &StepDirPinsAxis2, ((StepDirDriver*)&driver2));
+
+#else
+  #error "Configuration (Config.h): MOUNT_PRESENT without AXIS2_DRIVER_MODEL should never happen!"
 #endif
 
 const AxisPins PinsAxis2 = {AXIS2_SENSE_LIMIT_MIN_PIN, AXIS2_SENSE_HOME_PIN, AXIS2_SENSE_LIMIT_MAX_PIN, {AXIS2_SENSE_HOME, AXIS2_SENSE_HOME_INIT, degToRadF(AXIS2_SENSE_HOME_DIST_LIMIT), AXIS2_SENSE_LIMIT_MIN, AXIS2_SENSE_LIMIT_MAX, AXIS2_SENSE_LIMIT_INIT}};
-const AxisSettings SettingsAxis2 = {AXIS2_STEPS_PER_DEGREE*RAD_DEG_RATIO, {degToRadF(AXIS2_LIMIT_MIN), degToRadF(AXIS2_LIMIT_MAX)}, siderealToRad(TRACK_BACKLASH_RATE)};
+const AxisSettings SettingsAxis2 = {AXIS2_COUNTS_PER_DEGREE*RAD_DEG_RATIO, {degToRadF(AXIS2_LIMIT_MIN), degToRadF(AXIS2_LIMIT_MAX)}, siderealToRad(TRACK_BACKLASH_RATE)};
+}
+
+Motor& motor2 = motor_2;
+
 Axis axis2(2, &PinsAxis2, &SettingsAxis2, AXIS_MEASURE_RADIANS, arcsecToRad(AXIS2_TARGET_TOLERANCE));
 
 #endif

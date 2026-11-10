@@ -235,7 +235,7 @@
         }
     #endif
 
-    if (axis1.isEnabled()) {
+    if (mount.isEnabled()) {
       // guide E/W
       bool pulseGuiding = GUIDE_SEPARATE_PULSE_RATE == ON && ST4_HAND_CONTROL != ON;
       GuideAction st4GuideActionAxis1 = GA_BREAK;
@@ -250,7 +250,7 @@
             if (goTo.isHomePaused()) goTo.homeContinue(); else
             if (goTo.state == GS_GOTO) goTo.abort(); else
           #endif
-          guide.startAxis1(st4GuideActionAxis1, pulseGuiding ? guide.settings.pulseRateSelect : guide.settings.axis1RateSelect, GUIDE_TIME_LIMIT*1000);
+          guide.startAxis1(st4GuideActionAxis1, pulseGuiding ? guide.settings.pulseRateSelect : guide.settings.axis1RateSelect, GUIDE_TIME_LIMIT*1000, pulseGuiding);
         } else guide.stopAxis1();
       }
 
@@ -267,7 +267,7 @@
             if (goTo.isHomePaused()) goTo.homeContinue(); else
             if (goTo.state == GS_GOTO) goTo.abort(); else
           #endif
-          guide.startAxis2(st4GuideActionAxis2, pulseGuiding ? guide.settings.pulseRateSelect : guide.settings.axis2RateSelect, GUIDE_TIME_LIMIT*1000);
+          guide.startAxis2(st4GuideActionAxis2, pulseGuiding ? guide.settings.pulseRateSelect : guide.settings.axis2RateSelect, GUIDE_TIME_LIMIT*1000, pulseGuiding);
         } else guide.stopAxis2();
       }
 

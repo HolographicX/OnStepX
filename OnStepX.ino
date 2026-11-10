@@ -2,7 +2,7 @@
  * Title       OnStepX
  * by          Howard Dutton
  *
- * Copyright (C) 2021-2025 Howard Dutton
+ * Copyright (C) 2021-2026 Howard Dutton
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,13 +43,14 @@
 // Firmware version ----------------------------------------------------------------------------------------------------------------
 #define FirmwareName                "On-Step"
 #define FirmwareVersionMajor        10
-#define FirmwareVersionMinor        26     // minor version 00 to 99
-#define FirmwareVersionPatch        "f"    // for example major.minor patch: 10.03c
+#define FirmwareVersionMinor        29     // minor version 00 to 99
+#define FirmwareVersionPatch        "c"    // for example major.minor patch: 10.03c
 #define FirmwareVersionConfig       6      // internal, for tracking configuration file changes
 
 #include "src/Common.h"
 #include "src/Validate.h"
 #include "src/lib/nv/Nv.h"
+#include "src/lib/analog/Analog.h"
 #include "src/lib/sense/Sense.h"
 #include "src/lib/tasks/OnTask.h"
 
@@ -62,10 +63,6 @@ extern Telescope telescope;
 #if DEBUG == PROFILER
   extern void profiler();
 #endif
-
-void systemServices() {
-  if (!xBusy) nv.poll(false);
-}
 
 void sensesPoll() {
   sense.poll();
@@ -98,17 +95,17 @@ void setup() {
   HAL_INIT();
   WIRE_INIT();
 
-  if (!nv.init()) {
+  analog.begin();
+
+  nv().setGate(&xBusy);
+  if (!nv().init()) {
     DLF("ERR: Setup, NV (EEPROM/FRAM/Flash/etc.) device not found!");
-    nv.initError = true;
   }
   delay(2000);
 
-  // start system service task
-  VF("MSG: System, start NV service task (rate 10ms priority 7)... ");
-  // add task for system services, runs at 10ms intervals so commiting 1KB of NV takes about 10 seconds
-  // the cache is scanned (for writing) at 2000 bytes/second but can be slower while reading data into the cache at startup
-  if (tasks.add(10, 0, true, 7, systemServices, "SysNv")) { VLF("success"); } else { VLF("FAILED!"); }
+  #if defined(NV_WIPE) && NV_WIPE == ON
+    nv().wipe();
+  #endif
 
   // start input sense polling task
   int pollingRate = round((1000.0F/HAL_FRACTIONAL_SEC)/2.0F);
