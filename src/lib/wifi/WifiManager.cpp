@@ -47,8 +47,8 @@ bool WifiManager::init() {
       WiFi.mode(WIFI_AP);
     } else
     if (!settings.accessPointEnabled && settings.stationEnabled) {
-      VF("MSG: WiFi, starting Station for SSID "); V(sta->ssid); V(" PWD "); VL(sta->pwd);
-      WiFi.begin(sta->ssid, sta->pwd);
+      VF("MSG: WiFi, starting Station for SSID "); V(sta->ssid); V(" PWD "); VL(staPwd->password);
+      WiFi.begin(sta->ssid, staPwd->password);
       // #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3)
       WiFi.setTxPower(WIFI_POWER_8_5dBm);
       // #endif
@@ -57,8 +57,8 @@ bool WifiManager::init() {
     if (settings.accessPointEnabled && settings.stationEnabled) {
       VF("MSG: WiFi, starting Soft AP for SSID "); V(settings.ap.ssid); V(" PWD "); V(settings.ap.pwd); V(" CH "); VL(settings.ap.channel);
       WiFi.softAP(settings.ap.ssid, settings.ap.pwd, settings.ap.channel);
-      VF("MSG: WiFi, starting Station for SSID "); V(sta->ssid); V(" PWD "); VL(sta->pwd);
-      WiFi.begin(sta->ssid, sta->pwd);
+      VF("MSG: WiFi, starting Station for SSID "); V(sta->ssid); V(" PWD "); VL(staPwd->password);
+      WiFi.begin(sta->ssid, staPwd->password);
       // #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3)
       WiFi.setTxPower(WIFI_POWER_8_5dBm);
       // #endif
